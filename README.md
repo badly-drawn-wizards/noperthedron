@@ -1,0 +1,1 @@
+An attempt at formalizing [A convex polyhedron without Rupert’s property](https://arxiv.org/pdf/2508.18475) in Lean4
