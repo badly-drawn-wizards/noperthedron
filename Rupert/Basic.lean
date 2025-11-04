@@ -334,6 +334,7 @@ theorem mem_noperthedron (p : ℝ³) :
       _ = rot3z (k' * (1/15) * (2 * π)) := by rw [( calc (k % 15 : ℤ) = k' := by grind)]; norm_cast
 
 
+@[simp]
 theorem noperthedron_point_symmetric {p : ℝ³} : p ∈ noperthedron → -p ∈ noperthedron := by
     simp only [mem_noperthedron] at *
     rintro ⟨s, k, q, ⟨s_in, q_in, rfl⟩⟩
@@ -374,19 +375,18 @@ theorem lemma7_1 :
     grind
 
 theorem lemma7_2 :
-  (rot2 (α + π) ∘L proj_rot θ φ) '' noperthedron = (rot2 α ∘L proj_rot θ φ) '' noperthedron
-    := by
+  (rot2 (α + π) ∘L proj_rot θ φ) '' noperthedron = (rot2 α ∘L proj_rot θ φ) '' noperthedron := by
     ext p
-    simp only [AddChar.map_add_eq_mul, Set.mem_image, mul_eq_comp]
-
-    -- TODO figure out why this is necesary
-    constructor <;> rintro ⟨q, q_in, rfl⟩ <;> use -q
-    · constructor
+    constructor <;> rintro ⟨q, q_in, rfl⟩ <;> use -q <;> {
+      constructor
       apply (noperthedron_point_symmetric q_in)
-      simp [rot2_180, ContinuousLinearMap.comp_neg, ContinuousLinearMap.neg_comp, ContinuousLinearMap.map_neg, ContinuousLinearMap.neg_apply]
-    · constructor
-      apply (noperthedron_point_symmetric q_in)
-      simp [rot2_180, ContinuousLinearMap.comp_neg, ContinuousLinearMap.neg_comp, ContinuousLinearMap.map_neg, ContinuousLinearMap.neg_apply]
+      simp [AddChar.map_add_eq_mul, map_neg]
+    }
 
--- theorem lemma7_3 :
---   flip_y * proj_rot θ φ *'' SetLike.coe noperthedron = proj_rot
+theorem lemma7_3 :
+  (flip_y ∘L proj_rot θ φ) '' noperthedron = proj_rot (θ + π * 15⁻¹) (π - φ) '' noperthedron := by
+    ext p
+    simp only [Set.mem_image, SetLike.mem_coe, mem_noperthedron, proj_rot]
+    constructor <;> rintro ⟨q, ⟨s,k,r,s_in,r_in,rfl⟩, rfl⟩ <;> simp only [↓existsAndEq, and_true]
+    · sorry
+    · sorry
