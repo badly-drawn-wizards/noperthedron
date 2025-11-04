@@ -11,6 +11,9 @@ import Init.Data.Int.DivMod.Basic
 noncomputable section
 open Real
 
+notation "ℝ²" => Fin 2 → ℝ
+notation "ℝ³" => Fin 3 → ℝ
+
 namespace PreferComp
   variable {R A B : Type*}
   variable [Semiring R]
@@ -29,7 +32,7 @@ def rot2_mat (α : ℝ) : Matrix (Fin 2) (Fin 2) ℝ :=
       | 1, 1 => Real.cos α
 
 @[reducible]
-def rot2 : AddChar ℝ ((Fin 2 → ℝ) →L[ℝ] (Fin 2 → ℝ)) where
+def rot2 : AddChar ℝ (ℝ² →L[ℝ] ℝ²) where
   toFun α := {
     toFun := (rot2_mat α).toLin'
     map_add' := by apply LinearMap.map_add
@@ -87,7 +90,7 @@ def rot3x_mat (α : ℝ) : Matrix (Fin 3) (Fin 3) ℝ :=
       | 2, 2 => Real.cos α
 
 @[reducible]
-def rot3x : AddChar ℝ ((Fin 3 → ℝ) →L[ℝ] (Fin 3 → ℝ)) where
+def rot3x : AddChar ℝ (ℝ³ →L[ℝ] ℝ³) where
   toFun α := {
     toFun := (rot3x_mat α).toLin'
     map_add' := by apply LinearMap.map_add
@@ -136,7 +139,7 @@ def rot3y_mat (α : ℝ) : (Matrix (Fin 3) (Fin 3) ℝ) :=
       | 2, 2 => Real.cos α
 
 @[reducible]
-def rot3y : AddChar ℝ ((Fin 3 → ℝ) →L[ℝ] (Fin 3 → ℝ)) where
+def rot3y : AddChar ℝ (ℝ³ →L[ℝ] ℝ³) where
   toFun α := {
     toFun := (rot3y_mat α).toLin'
     map_add' := by apply LinearMap.map_add
@@ -182,7 +185,7 @@ def rot3z_mat (α : ℝ) : Matrix (Fin 3) (Fin 3) ℝ :=
       | 2, 2 => 1
 
 @[reducible]
-def rot3z : AddChar ℝ ((Fin 3 → ℝ) →L[ℝ] (Fin 3 → ℝ)) where
+def rot3z : AddChar ℝ (ℝ³ →L[ℝ] ℝ³) where
   toFun α := {
     toFun := (rot3z_mat α).toLin'
     map_add' := by apply LinearMap.map_add
@@ -234,7 +237,7 @@ def proj_xy_r90_mat : Matrix (Fin 2) (Fin 3) ℝ :=
     | 1, 2 => 0
 
 @[reducible]
-def proj_xy_r90 : (Fin 3 → ℝ) →L[ℝ] (Fin 2 → ℝ) where
+def proj_xy_r90 : ℝ³ →L[ℝ] ℝ² where
   toFun := proj_xy_r90_mat.toLin'
   map_add' := by apply LinearMap.map_add
   map_smul' := by apply LinearMap.map_smul
@@ -247,13 +250,13 @@ def flip_y_mat : Matrix (Fin 2) (Fin 2) ℝ :=
     | 1, 0 => -1
     | 1, 1 => 0
 
-def flip_y : (Fin 2 → ℝ) →L[ℝ] (Fin 2 → ℝ) where
+def flip_y : ℝ² →L[ℝ] ℝ² where
   toFun := flip_y_mat.toLin'
   map_add' := by apply LinearMap.map_add
   map_smul' := by apply LinearMap.map_smul
 
 @[simp]
-def proj_rot (θ φ : ℝ) : (Fin 3 → ℝ) →L[ℝ] (Fin 2 → ℝ) :=
+def proj_rot (θ φ : ℝ) : ℝ³ →L[ℝ] ℝ² :=
   proj_xy_r90 ∘L rot3y φ ∘L rot3z (-θ)
 
 theorem rot_proj_rot : rot2 α ∘L proj_rot θ φ = proj_xy_r90 ∘L rot3z α ∘L rot3y φ ∘L rot3z (-θ) := by
@@ -263,8 +266,6 @@ theorem rot_proj_rot : rot2 α ∘L proj_rot θ φ = proj_xy_r90 ∘L rot3z α �
 def convex_position (𝕜 V : Type) [PartialOrder 𝕜] [AddCommMonoid 𝕜] [Semiring 𝕜] [AddCommMonoid V] [Module 𝕜 V] (P : Set V) : Prop :=
   ∀ p ∈ P,
     p ∉ convexHull 𝕜 (P \ (Set.singleton p))
-
-notation "ℝ³" => Fin 3 → ℝ
 
 def rupert' (P : Set ℝ³) :=
     ∃ (α θ₁ φ₁ θ₂ φ₂ : ℝ), ∀ p ∈ P,
