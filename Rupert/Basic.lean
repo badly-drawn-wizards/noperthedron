@@ -436,7 +436,7 @@ lemma lemma7_3_2 :
           simp [Distrib.right_distrib, AddChar.map_add_eq_mul, mul_eq_comp]
         _ = (s • (((rot3z (16 * 15⁻¹ * π + -8 * 15⁻¹ * (2 * π)))) ∘L rot3z (k * 15⁻¹ * (2 * π)))) q := by
           simp [AddChar.map_add_eq_mul]
-        _ = (s • (((rot3z 0 ∘L rot3z (k * 15⁻¹ * (2 * π)))))) q := by ring
+        _ = (s • (((rot3z 0 ∘L rot3z (k * 15⁻¹ * (2 * π)))))) q := by ring_nf
         _ = (s • rot3z (↑k * 15⁻¹ * (2 * π))) q := by simp
       rw [h]
       grind
