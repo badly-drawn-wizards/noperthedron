@@ -446,6 +446,21 @@ lemma lemma7_3_2 :
 
 theorem lemma7_3 :
   (flip_y ∘L proj_rot θ φ) '' noperthedron = proj_rot (θ + π * 15⁻¹) (π - φ) '' noperthedron := by
-    simp only [lemma7_3_1]; eta_reduce
+    simp only [lemma7_3_1]
     have h : (-proj_rot (θ + π * 15⁻¹) (π - φ)) ∘L (rot3z (π * 16 * 15⁻¹)) = (proj_rot (θ + π * 15⁻¹) (π - φ)) ∘L (-rot3z (π * 16 * 15⁻¹)) := by simp
     simp only [h, comp_image, lemma7_3_2]
+
+theorem lemma9_rot2 :
+  ‖rot2 α‖ = 1 := by sorry
+
+theorem lemma9_rot3x :
+  ‖rot3x α‖ = 1 := by sorry
+
+theorem lemma9_rot3y :
+  ‖rot3y α‖ = 1 := by sorry
+
+theorem lemma9_rot3z :
+  ‖rot3z α‖ = 1 := by sorry
+
+theorem lemma9_proj_rot :
+  ‖proj_rot α β‖ = 1 := by sorry
