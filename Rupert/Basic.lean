@@ -4,6 +4,7 @@ import Mathlib.Data.Matrix.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.Convex.Basic
 import Mathlib.Analysis.Convex.Hull
+import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Finset.Basic
 import Init.Data.Int.DivMod.Basic
@@ -11,8 +12,8 @@ import Init.Data.Int.DivMod.Basic
 noncomputable section
 open Real
 
-notation "ℝ²" => Fin 2 → ℝ
-notation "ℝ³" => Fin 3 → ℝ
+notation "ℝ²" => EuclideanSpace ℝ (Fin 2)
+notation "ℝ³" => EuclideanSpace ℝ (Fin 3)
 
 namespace PreferComp
   variable {R A B C : Type*}
@@ -311,7 +312,11 @@ def mem_noperthedron' (p : ℝ³) :
   unfold noperthedron
   simp only [Int.reduceNeg, Finset.mem_image, Finset.mem_product, Finset.mem_insert,
     Finset.mem_singleton, Finset.mem_range, Prod.exists]
-  grind only [cases Or]
+  constructor
+  · rintro ⟨s,k,q,⟨⟨s_in,k_in,q_in⟩,rfl⟩⟩
+    use s, k, q
+  · rintro ⟨s,k,q,s_in,k_in,q_in,rfl⟩
+    use s, k, q
 
 @[simp]
 theorem mem_noperthedron (p : ℝ³) :
@@ -351,7 +356,7 @@ theorem lemma7_1 :
     ↓existsAndEq, and_true, and_or_left, or_and_right, exists_or, proj_rot]
   have h (p : ℝ³) (s : ℤ) a b := calc
     (proj_xy_r90 ∘L rot3y φ ∘L rot3z a $ s • rot3z b $ p) = _ := by rfl
-    _ = (proj_xy_r90 ∘L rot3y φ ∘L rot3z a ∘L (s • rot3z b)) p := by simp
+    _ = (proj_xy_r90 ∘L rot3y φ ∘L rot3z a ∘L (s • rot3z b)) p := by simp only [ContinuousLinearMap.comp_apply]
     _ = s • (proj_xy_r90 ∘L rot3y φ ∘L rot3z a ∘L rot3z b) p := by simp only [ContinuousLinearMap.comp_smul, ContinuousLinearMap.smul_apply]
     _ = s • (proj_xy_r90 ∘L rot3y φ ∘L (rot3z a ∘L rot3z b)) p := by simp
     _ = s • (proj_xy_r90 ∘L rot3y φ ∘L rot3z (a + b)) p := by simp [AddChar.map_add_eq_mul]
@@ -359,22 +364,40 @@ theorem lemma7_1 :
   constructor <;> rintro (h|h|h) <;> rcases h with ⟨s, k, ⟨s_in, rfl⟩⟩
   · left
     use s, k-1
-    grind
+    repeat rw [h]
+    simp only [Int.cast_sub]
+    ring_nf
+    trivial
   · right; left
     use s, k-1
-    grind
+    repeat rw [h]
+    simp only [Int.cast_sub]
+    ring_nf
+    trivial
   · right; right
     use s, k-1
-    grind
+    repeat rw [h]
+    simp only [Int.cast_sub]
+    ring_nf
+    trivial
   · left
     use s, k+1
-    grind
+    repeat rw [h]
+    simp only [Int.cast_add]
+    ring_nf
+    trivial
   · right; left
     use s, k+1
-    grind
+    repeat rw [h]
+    simp only [Int.cast_add]
+    ring_nf
+    trivial
   · right; right
     use s, k+1
-    grind
+    repeat rw [h]
+    simp only [Int.cast_add]
+    ring_nf
+    trivial
 
 theorem lemma7_2 :
   (rot2 (α + π) ∘L proj_rot θ φ) '' noperthedron = (rot2 α ∘L proj_rot θ φ) '' noperthedron := by
@@ -396,7 +419,7 @@ lemma lemma7_3_1 :
       Matrix.of_apply, Matrix.mul_apply, Fin.sum_univ_three, zero_mul, add_zero, neg_mul, one_mul,
       zero_add, mul_zero, neg_zero, mul_neg, mul_one, Fin.sum_univ_two, cos_pi_sub, sin_pi_sub,
       neg_add_rev, cos_add, sin_add, h, cos_pi, sin_pi, sub_zero, ContinuousLinearMap.neg_apply,
-      Pi.neg_apply] <;> ring_nf
+      PiLp.neg_apply] <;> ring_nf
     · calc
         -(sin θ * v 0) + (cos θ * v 1) = _ := by rfl
         _ = (-(sin θ * v 0) + (cos θ * v 1)) * ((sin (π * 15⁻¹))^2 + (cos (π * 15⁻¹))^2) := by simp [Real.sin_sq_add_cos_sq]
@@ -417,7 +440,7 @@ lemma lemma7_3_2 :
         (-rot3z (π * 16 * 15⁻¹)) ((s • rot3z (↑k * 15⁻¹ * (2 * π))) r) = _ := by rfl
         _ = (-rot3z (π * 16 * 15⁻¹) ∘L (s • rot3z (↑k * 15⁻¹ * (2 * π)))) r := by rfl
         _ = (-s • (rot3z (16 * 15⁻¹ * π) ∘L rot3z (↑k * 15⁻¹ * (2 * π)))) r := by
-          simp only [ContinuousLinearMap.comp_smul, ContinuousLinearMap.neg_apply, ContinuousLinearMap.smul_apply]
+          simp only [ContinuousLinearMap.comp_smul, ContinuousLinearMap.neg_apply, ContinuousLinearMap.smul_apply, neg_smul]
           ring_nf
         _ = (-s • rot3z (↑(8 + k) * 15⁻¹ * (2 * π))) r := by
           simp only [Int.cast_add, Distrib.right_distrib, AddChar.map_add_eq_mul, mul_eq_comp]
@@ -451,7 +474,9 @@ theorem lemma7_3 :
     simp only [h, comp_image, lemma7_3_2]
 
 theorem lemma9_rot2 :
-  ‖rot2 α‖ = 1 := by sorry
+  ‖rot2 α‖ = 1 := by
+    simp only [ContinuousLinearMap.norm_def]
+    sorry
 
 theorem lemma9_rot3x :
   ‖rot3x α‖ = 1 := by sorry
