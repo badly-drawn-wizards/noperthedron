@@ -15,10 +15,13 @@ notation "ℝ²" => Fin 2 → ℝ
 notation "ℝ³" => Fin 3 → ℝ
 
 namespace PreferComp
-  variable {R A B : Type*}
+  variable {R A B C : Type*}
   variable [Semiring R]
   variable [AddCommMonoid A] [Module R A] [TopologicalSpace A]
+  variable [AddCommMonoid B] [Module R B] [TopologicalSpace B]
+  variable [AddCommMonoid C] [Module R C] [TopologicalSpace C]
   @[scoped simp] def mul_eq_comp {f g : A →L[R] A} : g * f = g ∘L f := by rfl
+  @[simp] def comp_image S (g : B →L[R] C) (f : A →L[R] B) : ⇑(g ∘L f) '' S = ⇑g '' (⇑f '' S) := by ext p; simp
 end PreferComp
 
 open PreferComp
@@ -383,7 +386,7 @@ theorem lemma7_2 :
     }
 
 lemma lemma7_3_1 :
-  flip_y ∘L proj_rot θ φ = -proj_rot (θ + π * 15⁻¹) (π - φ) ∘L rot3z (π * 16 * 15⁻¹) := by
+  flip_y ∘L proj_rot θ φ = (-proj_rot (θ + π * 15⁻¹) (π - φ)) ∘L rot3z (π * 16 * 15⁻¹) := by
     ext v i
     have h : π * 16 * 15⁻¹ = π * 15⁻¹ + π := by ring
     fin_cases i <;> simp only [proj_rot, AddChar.coe_mk, rot3y_mat, rot3z_mat, cos_neg, sin_neg,
@@ -404,18 +407,18 @@ lemma lemma7_3_1 :
         _ = _ := by ring_nf
 
 lemma lemma7_3_2 :
-  (-rot3z (16 * 15⁻¹ * π)) '' noperthedron = noperthedron := by
+  (-rot3z (π * 16 * 15⁻¹)) '' noperthedron = noperthedron := by
     ext p
     simp only [Set.mem_image, SetLike.mem_coe, mem_noperthedron]
     constructor
     · rintro ⟨q,⟨s, k, r, s_in, r_in, rfl⟩,rfl⟩
       use -s, (8+k), r
       have h := calc
-        (-rot3z (16 * 15⁻¹ * π)) ((s • rot3z (↑k * 15⁻¹ * (2 * π))) r) = _ := by rfl
-        _ = (-rot3z (16 * 15⁻¹ * π) ∘L (s • rot3z (↑k * 15⁻¹ * (2 * π)))) r := by rfl
+        (-rot3z (π * 16 * 15⁻¹)) ((s • rot3z (↑k * 15⁻¹ * (2 * π))) r) = _ := by rfl
+        _ = (-rot3z (π * 16 * 15⁻¹) ∘L (s • rot3z (↑k * 15⁻¹ * (2 * π)))) r := by rfl
         _ = (-s • (rot3z (16 * 15⁻¹ * π) ∘L rot3z (↑k * 15⁻¹ * (2 * π)))) r := by
           simp only [ContinuousLinearMap.comp_smul, ContinuousLinearMap.neg_apply, ContinuousLinearMap.smul_apply]
-          ring
+          ring_nf
         _ = (-s • rot3z (↑(8 + k) * 15⁻¹ * (2 * π))) r := by
           simp only [Int.cast_add, Distrib.right_distrib, AddChar.map_add_eq_mul, mul_eq_comp]
           ring_nf
@@ -425,16 +428,16 @@ lemma lemma7_3_2 :
       simp only [↓existsAndEq, and_true]
       use -s, (-8+k), q
       have h := calc
-        (-rot3z (16 * 15⁻¹ * π)) ((-s • rot3z (↑(-8 + k) * 15⁻¹ * (2 * π))) q) = _ := by rfl
-        _ = (-rot3z (16 * 15⁻¹ * π)) ((-s • rot3z ((-8 + k) * 15⁻¹ * (2 * π))) q) := by simp [Int.cast_add]
-        _ = ((-rot3z (16 * 15⁻¹ * π)) ∘L (-s • rot3z ((-8 + k) * 15⁻¹ * (2 * π)))) q := by rfl
-        _ = (-s • ((-rot3z (16 * 15⁻¹ * π)) ∘L (rot3z ((-8 + k) * 15⁻¹ * (2 * π))))) q := by
+        (-rot3z (π * 16 * 15⁻¹)) ((-s • rot3z (↑(-8 + k) * 15⁻¹ * (2 * π))) q) = _ := by rfl
+        _ = (-rot3z (π * 16 * 15⁻¹)) ((-s • rot3z ((-8 + k) * 15⁻¹ * (2 * π))) q) := by simp [Int.cast_add]
+        _ = ((-rot3z (π * 16 * 15⁻¹)) ∘L (-s • rot3z ((-8 + k) * 15⁻¹ * (2 * π)))) q := by rfl
+        _ = (-s • ((-rot3z (π * 16 * 15⁻¹)) ∘L (rot3z ((-8 + k) * 15⁻¹ * (2 * π))))) q := by
           simp only [ContinuousLinearMap.comp_smul, ContinuousLinearMap.smul_apply]
-        _ = (s • ((rot3z (16 * 15⁻¹ * π)) ∘L (rot3z ((-8 + k) * 15⁻¹ * (2 * π))))) q := by
+        _ = (s • ((rot3z (π * 16 * 15⁻¹)) ∘L (rot3z ((-8 + k) * 15⁻¹ * (2 * π))))) q := by
           simp
-        _ = (s • (((rot3z (16 * 15⁻¹ * π)) ∘L (rot3z (-8 * 15⁻¹ * (2 * π)))) ∘L rot3z (k * 15⁻¹ * (2 * π)))) q := by
+        _ = (s • (((rot3z (π * 16 * 15⁻¹)) ∘L (rot3z (-8 * 15⁻¹ * (2 * π)))) ∘L rot3z (k * 15⁻¹ * (2 * π)))) q := by
           simp [Distrib.right_distrib, AddChar.map_add_eq_mul, mul_eq_comp]
-        _ = (s • (((rot3z (16 * 15⁻¹ * π + -8 * 15⁻¹ * (2 * π)))) ∘L rot3z (k * 15⁻¹ * (2 * π)))) q := by
+        _ = (s • (((rot3z (π * 16 * 15⁻¹ + -8 * 15⁻¹ * (2 * π)))) ∘L rot3z (k * 15⁻¹ * (2 * π)))) q := by
           simp [AddChar.map_add_eq_mul]
         _ = (s • (((rot3z 0 ∘L rot3z (k * 15⁻¹ * (2 * π)))))) q := by ring_nf
         _ = (s • rot3z (↑k * 15⁻¹ * (2 * π))) q := by simp
@@ -443,15 +446,6 @@ lemma lemma7_3_2 :
 
 theorem lemma7_3 :
   (flip_y ∘L proj_rot θ φ) '' noperthedron = proj_rot (θ + π * 15⁻¹) (π - φ) '' noperthedron := by
-    sorry
-    -- rw [lemma7_3_1]
-    -- ext p
-    -- simp only [Set.mem_image]
-    -- constructor <;> rintro ⟨q, q_in, rfl⟩
-    -- · use _
-    --   constructor
-    -- · sorry
-    -- simp only [Set.mem_image, SetLike.mem_coe, mem_noperthedron, proj_rot]
-    -- constructor <;> rintro ⟨q, ⟨s,k,r,s_in,r_in,rfl⟩, rfl⟩ <;> simp only [↓existsAndEq, and_true]
-    -- · sorry
-    -- · sorry
+    simp only [lemma7_3_1]; eta_reduce
+    have h : (-proj_rot (θ + π * 15⁻¹) (π - φ)) ∘L (rot3z (π * 16 * 15⁻¹)) = (proj_rot (θ + π * 15⁻¹) (π - φ)) ∘L (-rot3z (π * 16 * 15⁻¹)) := by simp
+    simp only [h, comp_image, lemma7_3_2]
