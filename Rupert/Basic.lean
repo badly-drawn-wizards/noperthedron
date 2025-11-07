@@ -611,15 +611,43 @@ lemma norm_proj_xy_r90_eq_one :
         _ = N := by simp [Fin.sum_univ_three, PiLp.norm_eq_sum]
 
 theorem lemma9_proj_rot :
-  ‖proj_rot α β‖ = 1 := by
+  ‖proj_rot θ φ‖ = 1 := by
     apply ContinuousLinearMap.opNorm_eq_of_bounds
     simp
     intro x
     · simp only [proj_rot]
       calc
-        ‖proj_xy_r90 ∘L rot3y β ∘L rot3z (-α) $ x‖ = _ := by rfl
-        _ ≤ ‖proj_xy_r90 ∘L rot3y β ∘L rot3z (-α)‖ * ‖x‖ := by apply ContinuousLinearMap.le_opNorm
-        _ ≤ ‖proj_xy_r90‖ * ‖rot3y β ∘L rot3z (-α)‖ * ‖x‖ := by sorry
-        _ ≤ ‖proj_xy_r90‖ * ‖rot3y β‖ * ‖rot3z (-α)‖ * ‖x‖ := by sorry
+        ‖proj_xy_r90 ∘L rot3y φ ∘L rot3z (-θ) $ x‖ = _ := by rfl
+        _ ≤ ‖proj_xy_r90 ∘L rot3y φ ∘L rot3z (-θ)‖ * ‖x‖ := by apply ContinuousLinearMap.le_opNorm
+        _ ≤ (‖proj_xy_r90‖ * ‖rot3y φ‖ * ‖rot3z (-θ)‖) * ‖x‖ := by
+          apply mul_le_mul_of_nonneg_right
+          calc
+            ‖proj_xy_r90 ∘L rot3y φ ∘L rot3z (-θ)‖ = _ := by rfl
+            _ ≤ ‖proj_xy_r90‖ * ‖rot3y φ ∘L rot3z (-θ)‖ := by apply ContinuousLinearMap.opNorm_comp_le
+            _ ≤ ‖proj_xy_r90‖ * ‖rot3y φ‖ * ‖rot3z (-θ)‖ := by
+              rw [mul_assoc]
+              apply mul_le_mul_of_nonneg_left
+              apply ContinuousLinearMap.opNorm_comp_le
+              apply norm_nonneg
+          apply norm_nonneg
         _ = 1 * ‖x‖ := by grind [norm_proj_xy_r90_eq_one, lemma9_rot3y, lemma9_rot3z]
-    · sorry
+    · intros N N_nonneg h
+      specialize h !₂[-sin θ, cos θ, 0]
+      calc
+        1 = ((sin θ ^ 2 + cos θ ^ 2) ^ 2) ^ (2 : ℝ)⁻¹ := by simp [Real.sin_sq_add_cos_sq]
+        _ = ‖(proj_rot θ φ) !₂[-sin θ, cos θ, 0]‖ := by
+          simp only [proj_rot, AddChar.coe_mk, rot3y_mat, rot3z_mat, cos_neg, sin_neg, neg_neg,
+            ContinuousLinearMap.coe_comp', ContinuousLinearMap.coe_mk', proj_xy_r90_mat,
+            LinearMap.coe_mk, AddHom.coe_mk, Function.comp_apply, Matrix.toLin'_apply,
+            Matrix.mulVec_eq_sum, PiLp.toLp_apply, op_smul_eq_smul, Fin.sum_univ_three, Fin.isValue,
+            Matrix.cons_val_zero, neg_smul, Matrix.cons_val_one, Matrix.cons_val, zero_smul,
+            add_zero, Pi.add_apply, Pi.neg_apply, Pi.smul_apply, Matrix.transpose_apply,
+            Matrix.of_apply, smul_eq_mul, MulOpposite.op_add, MulOpposite.op_neg,
+            MulOpposite.op_mul, neg_mul, MulOpposite.op_zero, zero_mul, neg_zero,
+            MulOpposite.smul_eq_mul_unop, MulOpposite.unop_add, MulOpposite.unop_neg,
+            MulOpposite.unop_mul, MulOpposite.unop_op, mul_zero, MulOpposite.op_one, mul_one,
+            zero_add, ENNReal.toReal_ofNat, Nat.ofNat_pos, PiLp.norm_eq_sum, norm_eq_abs,
+            rpow_ofNat, sq_abs, Fin.sum_univ_two, one_mul, even_two, Even.neg_pow, one_div]
+          ring_nf
+        _ ≤ N * ‖!₂[-sin θ, cos θ, 0]‖ := by assumption
+        _ = N := by simp [Fin.sum_univ_three, PiLp.norm_eq_sum]
