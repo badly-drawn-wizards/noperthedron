@@ -5,6 +5,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.Convex.Basic
 import Mathlib.Analysis.Convex.Hull
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.InnerProductSpace.Adjoint
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Finset.Basic
 import Init.Data.Int.DivMod.Basic
@@ -599,8 +600,8 @@ lemma norm_proj_xy_r90_eq_one :
       Fin.sum_univ_two, mul_zero, mul_one, zero_add, add_zero, mul_neg, even_two, Even.neg_pow,
       one_div, one_mul]
     · refine (rpow_le_rpow_iff ?_ ?_ ?_).mpr ?_
-      · grind [add_nonneg, sq_nonneg]
-      · grind [add_nonneg, sq_nonneg]
+      · positivity
+      · positivity
       · simp
       · ring_nf; simp only [Fin.isValue, le_add_iff_nonneg_right, sq_nonneg]
     · intro N N_nonneg h
@@ -651,3 +652,204 @@ theorem lemma9_proj_rot :
           ring_nf
         _ ≤ N * ‖!₂[-sin θ, cos θ, 0]‖ := by assumption
         _ = N := by simp [Fin.sum_univ_three, PiLp.norm_eq_sum]
+
+theorem dist_rot2_apply :
+  ‖(rot2 α - rot2 α') v‖ = 2 * |sin ((α - α') / 2)| * ‖v‖ := by
+    simp [Matrix.mulVec_eq_sum, Fin.sum_univ_two, PiLp.norm_eq_sum]
+    calc
+      ((v 0 * cos α + -(v 1 * sin α) - (v 0 * cos α' + -(v 1 * sin α'))) ^ 2 +
+        (v 0 * sin α + v 1 * cos α - (v 0 * sin α' + v 1 * cos α')) ^ 2) ^ (2 : ℝ)⁻¹ = _ := by rfl
+      _ = ((2 * sin ((α - α') / 2)) ^ 2 * (v 0 ^ 2 + v 1 ^ 2)) ^ (2 : ℝ)⁻¹ := by
+        have one_neg_cos_nonneg : 0 ≤ 1 - cos (α - α') := by simp [cos_le_one]
+        refine (rpow_left_inj ?_ ?_ ?_).mpr ?_ <;> try positivity
+        calc
+          (v 0 * cos α + -(v 1 * sin α) - (v 0 * cos α' + -(v 1 * sin α'))) ^ 2 +
+            (v 0 * sin α + v 1 * cos α - (v 0 * sin α' + v 1 * cos α')) ^ 2 = _ := by rfl
+          _ = (v 0 * (cos α - cos α') - v 1 * (sin α - sin α')) ^ 2 + (v 0 * (sin α - sin α') + v 1 * (cos α - cos α')) ^ 2 := by ring_nf
+          _ = 4 * (v 0 ^ 2 + v 1 ^ 2) * (sin ((α - α') / 2)) ^ 2 * ((sin ((α + α') / 2)) ^ 2 + (cos ((α + α') / 2)) ^ 2) := by
+            simp [sin_sub_sin, cos_sub_cos, sq]
+            ring_nf
+          _ = 4 * (v 0 ^ 2 + v 1 ^ 2) * (sin ((α - α') / 2)) ^ 2 := by simp [sin_sq_add_cos_sq]
+          _ = (2 * sin ((α - α') / 2)) ^ 2 * (v 0 ^ 2 + v 1 ^ 2) := by ring
+      _ = 2 * |sin ((α - α') / 2)| * (v 0 ^ 2 + v 1 ^ 2) ^ (2 : ℝ)⁻¹ := by
+        rw [mul_rpow, inv_eq_one_div, rpow_div_two_eq_sqrt]
+        simp [sqrt_sq_eq_abs]
+        all_goals positivity
+
+theorem dist_rot3x_apply :
+  ‖(rot3x α - rot3x α') v‖ = 2 * |sin ((α - α') / 2)| * ‖!₂[v 1, v 2]‖ := by
+    simp only [AddChar.coe_mk, rot3x_mat, ContinuousLinearMap.coe_sub', ContinuousLinearMap.coe_mk',
+      LinearMap.coe_mk, AddHom.coe_mk, Pi.sub_apply, Matrix.toLin'_apply, Matrix.mulVec_eq_sum,
+      op_smul_eq_smul, Fin.sum_univ_three, Fin.isValue, ENNReal.toReal_ofNat, Nat.ofNat_pos,
+      PiLp.norm_eq_sum, Pi.add_apply, Pi.smul_apply, Matrix.transpose_apply, Matrix.of_apply,
+      smul_eq_mul, norm_eq_abs, rpow_ofNat, sq_abs, mul_one, mul_zero, add_zero, sub_self, ne_eq,
+      OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, zero_add, mul_neg, one_div, PiLp.toLp_apply,
+      Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+    calc
+      ((v 1 * cos α + -(v 2 * sin α) - (v 1 * cos α' + -(v 2 * sin α'))) ^ 2 +
+        (v 1 * sin α + v 2 * cos α - (v 1 * sin α' + v 2 * cos α')) ^ 2) ^ (2 : ℝ)⁻¹ = _ := by rfl
+      _ = ((2 * sin ((α - α') / 2)) ^ 2 * (v 1 ^ 2 + v 2 ^ 2)) ^ (2 : ℝ)⁻¹ := by
+        have one_neg_cos_nonneg : 0 ≤ 1 - cos (α - α') := by simp [cos_le_one]
+        refine (rpow_left_inj ?_ ?_ ?_).mpr ?_ <;> try positivity
+        calc
+          (v 1 * cos α + -(v 2 * sin α) - (v 1 * cos α' + -(v 2 * sin α'))) ^ 2 +
+            (v 1 * sin α + v 2 * cos α - (v 1 * sin α' + v 2 * cos α')) ^ 2 = _ := by rfl
+          _ = (v 1 * (cos α - cos α') - v 2 * (sin α - sin α')) ^ 2 + (v 1 * (sin α - sin α') + v 2 * (cos α - cos α')) ^ 2 := by ring_nf
+          _ = 4 * (v 1 ^ 2 + v 2 ^ 2) * (sin ((α - α') / 2)) ^ 2 * ((sin ((α + α') / 2)) ^ 2 + (cos ((α + α') / 2)) ^ 2) := by
+            simp [sin_sub_sin, cos_sub_cos, sq]
+            ring_nf
+          _ = 4 * (v 1 ^ 2 + v 2 ^ 2) * (sin ((α - α') / 2)) ^ 2 := by simp [sin_sq_add_cos_sq]
+          _ = (2 * sin ((α - α') / 2)) ^ 2 * (v 1 ^ 2 + v 2 ^ 2) := by ring
+      _ = 2 * |sin ((α - α') / 2)| * (v 1 ^ 2 + v 2 ^ 2) ^ (2 : ℝ)⁻¹ := by
+        rw [mul_rpow, inv_eq_one_div, rpow_div_two_eq_sqrt]
+        simp [sqrt_sq_eq_abs]
+        all_goals positivity
+
+theorem dist_rot3y_apply :
+  ‖(rot3y α - rot3y α') v‖ = 2 * |sin ((α - α') / 2)| * ‖!₂[v 0, v 2]‖ := by
+    simp only [AddChar.coe_mk, rot3y_mat, ContinuousLinearMap.coe_sub', ContinuousLinearMap.coe_mk',
+      LinearMap.coe_mk, AddHom.coe_mk, Pi.sub_apply, Matrix.toLin'_apply, Matrix.mulVec_eq_sum,
+      op_smul_eq_smul, Fin.sum_univ_three, Fin.isValue, ENNReal.toReal_ofNat, Nat.ofNat_pos,
+      PiLp.norm_eq_sum, Pi.add_apply, Pi.smul_apply, Matrix.transpose_apply, Matrix.of_apply,
+      smul_eq_mul, norm_eq_abs, rpow_ofNat, sq_abs, mul_zero, add_zero, mul_neg, mul_one, zero_add,
+      sub_self, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, one_div, PiLp.toLp_apply,
+      Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+    calc
+      ((v 0 * cos α + -(v 2 * sin α) - (v 0 * cos α' + -(v 2 * sin α'))) ^ 2 +
+        (v 0 * sin α + v 2 * cos α - (v 0 * sin α' + v 2 * cos α')) ^ 2) ^ (2 : ℝ)⁻¹ = _ := by rfl
+      _ = ((2 * sin ((α - α') / 2)) ^ 2 * (v 0 ^ 2 + v 2 ^ 2)) ^ (2 : ℝ)⁻¹ := by
+        have one_neg_cos_nonneg : 0 ≤ 1 - cos (α - α') := by simp [cos_le_one]
+        refine (rpow_left_inj ?_ ?_ ?_).mpr ?_ <;> try positivity
+        calc
+          (v 0 * cos α + -(v 2 * sin α) - (v 0 * cos α' + -(v 2 * sin α'))) ^ 2 +
+            (v 0 * sin α + v 2 * cos α - (v 0 * sin α' + v 2 * cos α')) ^ 2 = _ := by rfl
+          _ = (v 0 * (cos α - cos α') - v 2 * (sin α - sin α')) ^ 2 + (v 0 * (sin α - sin α') + v 2 * (cos α - cos α')) ^ 2 := by ring_nf
+          _ = 4 * (v 0 ^ 2 + v 2 ^ 2) * (sin ((α - α') / 2)) ^ 2 * ((sin ((α + α') / 2)) ^ 2 + (cos ((α + α') / 2)) ^ 2) := by
+            simp [sin_sub_sin, cos_sub_cos, sq]
+            ring_nf
+          _ = 4 * (v 0 ^ 2 + v 2 ^ 2) * (sin ((α - α') / 2)) ^ 2 := by simp [sin_sq_add_cos_sq]
+          _ = (2 * sin ((α - α') / 2)) ^ 2 * (v 0 ^ 2 + v 2 ^ 2) := by ring
+      _ = 2 * |sin ((α - α') / 2)| * (v 0 ^ 2 + v 2 ^ 2) ^ (2 : ℝ)⁻¹ := by
+        rw [mul_rpow, inv_eq_one_div, rpow_div_two_eq_sqrt]
+        simp [sqrt_sq_eq_abs]
+        all_goals positivity
+
+theorem dist_rot3z_apply :
+  ‖(rot3z α - rot3z α') v‖ = 2 * |sin ((α - α') / 2)| * ‖!₂[v 0, v 1]‖ := by
+    simp only [AddChar.coe_mk, rot3z_mat, ContinuousLinearMap.coe_sub', ContinuousLinearMap.coe_mk',
+      LinearMap.coe_mk, AddHom.coe_mk, Pi.sub_apply, Matrix.toLin'_apply, Matrix.mulVec_eq_sum,
+      op_smul_eq_smul, Fin.sum_univ_three, Fin.isValue, ENNReal.toReal_ofNat, Nat.ofNat_pos,
+      PiLp.norm_eq_sum, Pi.add_apply, Pi.smul_apply, Matrix.transpose_apply, Matrix.of_apply,
+      smul_eq_mul, norm_eq_abs, rpow_ofNat, sq_abs, mul_neg, mul_zero, add_zero, mul_one, zero_add,
+      sub_self, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, one_div, PiLp.toLp_apply,
+      Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+    calc
+      ((v 0 * cos α + -(v 1 * sin α) - (v 0 * cos α' + -(v 1 * sin α'))) ^ 2 +
+        (v 0 * sin α + v 1 * cos α - (v 0 * sin α' + v 1 * cos α')) ^ 2) ^ (2 : ℝ)⁻¹ = _ := by rfl
+      _ = ((2 * sin ((α - α') / 2)) ^ 2 * (v 0 ^ 2 + v 1 ^ 2)) ^ (2 : ℝ)⁻¹ := by
+        have one_neg_cos_nonneg : 0 ≤ 1 - cos (α - α') := by simp [cos_le_one]
+        refine (rpow_left_inj ?_ ?_ ?_).mpr ?_ <;> try positivity
+        calc
+          (v 0 * cos α + -(v 1 * sin α) - (v 0 * cos α' + -(v 1 * sin α'))) ^ 2 +
+            (v 0 * sin α + v 1 * cos α - (v 0 * sin α' + v 1 * cos α')) ^ 2 = _ := by rfl
+          _ = (v 0 * (cos α - cos α') - v 1 * (sin α - sin α')) ^ 2 + (v 0 * (sin α - sin α') + v 1 * (cos α - cos α')) ^ 2 := by ring_nf
+          _ = 4 * (v 0 ^ 2 + v 1 ^ 2) * (sin ((α - α') / 2)) ^ 2 * ((sin ((α + α') / 2)) ^ 2 + (cos ((α + α') / 2)) ^ 2) := by
+            simp [sin_sub_sin, cos_sub_cos, sq]
+            ring_nf
+          _ = 4 * (v 0 ^ 2 + v 1 ^ 2) * (sin ((α - α') / 2)) ^ 2 := by simp [sin_sq_add_cos_sq]
+          _ = (2 * sin ((α - α') / 2)) ^ 2 * (v 0 ^ 2 + v 1 ^ 2) := by ring
+      _ = 2 * |sin ((α - α') / 2)| * (v 0 ^ 2 + v 1 ^ 2) ^ (2 : ℝ)⁻¹ := by
+        rw [mul_rpow, inv_eq_one_div, rpow_div_two_eq_sqrt]
+        simp [sqrt_sq_eq_abs]
+        all_goals positivity
+
+theorem dist_rot2 :
+  ‖rot2 α - rot2 α'‖ = 2 * |sin ((α - α') / 2)| := by
+    apply ContinuousLinearMap.opNorm_eq_of_bounds
+    positivity
+    · intro v
+      rw [dist_rot2_apply]
+    · intro N N_nonneg h
+      specialize h !₂[1, 0]
+      have norm_xhat_eq_one : ‖!₂[(1 : ℝ), 0]‖ = 1 := by simp [PiLp.norm_eq_sum, Fin.sum_univ_two]
+      calc
+        2 * |sin ((α - α') / 2)| = _ := by rfl
+        _ = ‖(rot2 α - rot2 α') !₂[(1 : ℝ), 0]‖ := by simp only [dist_rot2_apply, norm_xhat_eq_one, mul_one]
+        _ ≤ N * ‖!₂[(1 : ℝ), 0]‖ := by assumption
+        _ = N := by simp [norm_xhat_eq_one]
+
+theorem dist_rot3x :
+  ‖rot3x α - rot3x α'‖ = 2 * |sin ((α - α') / 2)| := by
+    apply ContinuousLinearMap.opNorm_eq_of_bounds
+    positivity
+    · intro v
+      rw [dist_rot3x_apply]
+      by_cases h : |sin ((α - α') / 2)| = 0
+      · rw [h]; simp
+      · field_simp
+        simp [PiLp.norm_eq_sum, Fin.sum_univ_three]
+        apply rpow_le_rpow <;> norm_num <;> positivity
+    · intro N N_nonneg h
+      specialize h !₂[0, 1, 0]
+      have norm_xhat_eq_one : ‖!₂[(1 : ℝ), 0]‖ = 1 := by simp [PiLp.norm_eq_sum]
+      calc
+        2 * |sin ((α - α') / 2)| = _ := by rfl
+        _ = ‖(rot3x α - rot3x α') !₂[0, (1 : ℝ), 0]‖ := by
+          simp only [dist_rot3x_apply]
+          simp [norm_xhat_eq_one, mul_one]
+        _ ≤ N * ‖!₂[0, (1 : ℝ), 0]‖ := by assumption
+        _ = N := by simp [PiLp.norm_eq_sum, Fin.sum_univ_three]
+
+theorem dist_rot3y :
+  ‖rot3y α - rot3y α'‖ = 2 * |sin ((α - α') / 2)| := by
+    apply ContinuousLinearMap.opNorm_eq_of_bounds
+    positivity
+    · intro v
+      rw [dist_rot3y_apply]
+      by_cases h : |sin ((α - α') / 2)| = 0
+      · rw [h]; simp
+      · field_simp
+        simp [PiLp.norm_eq_sum, Fin.sum_univ_three]
+        apply rpow_le_rpow <;> norm_num <;> positivity
+    · intro N N_nonneg h
+      specialize h !₂[1, 0, 0]
+      have norm_xhat_eq_one : ‖!₂[(1 : ℝ), 0]‖ = 1 := by simp [PiLp.norm_eq_sum]
+      calc
+        2 * |sin ((α - α') / 2)| = _ := by rfl
+        _ = ‖(rot3y α - rot3y α') !₂[(1 : ℝ), 0, 0]‖ := by
+          simp only [dist_rot3y_apply]
+          simp [norm_xhat_eq_one, mul_one]
+        _ ≤ N * ‖!₂[(1 : ℝ), 0, 0]‖ := by assumption
+        _ = N := by simp [PiLp.norm_eq_sum, Fin.sum_univ_three]
+
+theorem dist_rot3z :
+  ‖rot3z α - rot3z α'‖ = 2 * |sin ((α - α') / 2)| := by
+    apply ContinuousLinearMap.opNorm_eq_of_bounds
+    positivity
+    · intro v
+      rw [dist_rot3z_apply]
+      by_cases h : |sin ((α - α') / 2)| = 0
+      · rw [h]; simp
+      · field_simp
+        simp [PiLp.norm_eq_sum, Fin.sum_univ_three]
+        apply rpow_le_rpow <;> norm_num <;> positivity
+    · intro N N_nonneg h
+      specialize h !₂[1, 0, 0]
+      have norm_xhat_eq_one : ‖!₂[(1 : ℝ), 0]‖ = 1 := by simp [PiLp.norm_eq_sum]
+      calc
+        2 * |sin ((α - α') / 2)| = _ := by rfl
+        _ = ‖(rot3z α - rot3z α') !₂[(1 : ℝ), 0, 0]‖ := by
+          simp only [dist_rot3z_apply]
+          norm_num
+          simp only [norm_xhat_eq_one, mul_one]
+        _ ≤ N * ‖!₂[(1 : ℝ), 0, 0]‖ := by assumption
+        _ = N := by simp [PiLp.norm_eq_sum, Fin.sum_univ_three]
+
+theorem dist_rot3x_eq_dist_rot {α α' : ℝ} :
+  ‖rot3x α - rot3x α'‖ = ‖rot2 α - rot2 α'‖ := by simp only [dist_rot3x, dist_rot2]
+
+theorem dist_rot3y_eq_dist_rot {α α' : ℝ} :
+  ‖rot3y α - rot3y α'‖ = ‖rot2 α - rot2 α'‖ := by simp only [dist_rot3y, dist_rot2]
+
+theorem dist_rot3z_eq_dist_rot {α α' : ℝ} :
+  ‖rot3z α - rot3z α'‖ = ‖rot2 α - rot2 α'‖ := by simp only [dist_rot3z, dist_rot2]
