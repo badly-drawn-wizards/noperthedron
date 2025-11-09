@@ -853,3 +853,23 @@ theorem dist_rot3y_eq_dist_rot {α α' : ℝ} :
 
 theorem dist_rot3z_eq_dist_rot {α α' : ℝ} :
   ‖rot3z α - rot3z α'‖ = ‖rot2 α - rot2 α'‖ := by simp only [dist_rot3z, dist_rot2]
+
+lemma two_mul_abs_sin_half_le : 2 * |sin (α / 2)| ≤ |α| := by
+  have h : |sin (α / 2)| ≤ |α / 2| := abs_sin_le_abs
+  calc
+    2 * |sin (α / 2)| = _ := by rfl
+    _ ≤ 2 * |α / 2| := by simp [h]
+    _ = 2 * (|α| / 2) := by simp [abs_div]
+    _ = |α| := by field
+
+-- lemma two_mul_abs_sin_half_eq : α = 0 ↔ 2 * |sin (α / 2)| = |α| := by
+--   constructor
+--   · rintro rfl; simp
+--   · intro h
+--     sorry -- We'll see if strict inequality is needed later
+
+theorem dist_rot2_le_dist : ‖rot2 α - rot2 α'‖ ≤ ‖α - α'‖ := by
+  calc
+    ‖rot2 α - rot2 α'‖ = _ := by rfl
+    _ = 2 * |sin ((α - α') / 2)| := by apply dist_rot2
+    _ ≤ |α - α'| := by apply two_mul_abs_sin_half_le
