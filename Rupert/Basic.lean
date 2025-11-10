@@ -271,8 +271,8 @@ def convex_position (𝕜 V : Type) [PartialOrder 𝕜] [AddCommMonoid 𝕜] [Se
     p ∉ convexHull 𝕜 (P \ (Set.singleton p))
 
 def rupert' (P : Set ℝ³) :=
-    ∃ (α θ₁ φ₁ θ₂ φ₂ : ℝ), ∀ p ∈ P,
-    (rot2 α ∘L proj_rot θ₁ φ₁) p ∈ (interior $ convexHull ℝ $ proj_rot θ₂ φ₂ '' P)
+    ∃ (α θ₁ φ₁ θ₂ φ₂ : ℝ),
+    (rot2 α ∘L proj_rot θ₁ φ₁) '' P ⊆ (interior $ convexHull ℝ $ proj_rot θ₂ φ₂ '' P)
 
 def C₁ : ℝ³
   | 0 => 152024884 / 259375205
@@ -873,3 +873,41 @@ theorem dist_rot2_le_dist : ‖rot2 α - rot2 α'‖ ≤ ‖α - α'‖ := by
     ‖rot2 α - rot2 α'‖ = _ := by rfl
     _ = 2 * |sin ((α - α') / 2)| := by apply dist_rot2
     _ ≤ |α - α'| := by apply two_mul_abs_sin_half_le
+
+lemma one_add_cos_eq : 1 + cos α = 2 * cos (α / 2) ^ 2 := by rw [cos_sq]; field_simp
+
+lemma lemma11_1_1 : cos (√(α ^ 2 + β ^ 2) / 2) ^ 2 = cos (√((-α) ^ 2 + β ^ 2) / 2) ^ 2 := by sorry
+lemma lemma11_1_2 : cos (√(α ^ 2 + β ^ 2) / 2) ^ 2 = cos (√(α ^ 2 + (-β) ^ 2) / 2) ^ 2 := by sorry
+lemma lemma11_1_3 : cos (α / 2) ^ 2 * cos (β / 2) ^ 2 = cos ((-α) / 2) ^ 2 * cos (β / 2) ^ 2 := by sorry
+lemma lemma11_1_4 : cos (α / 2) ^ 2 * cos (β / 2) ^ 2 = cos (α / 2) ^ 2 * cos ((-β) / 2) ^ 2 := by sorry
+
+theorem lemma11_1 : |α| ≤ 2 → |β| ≤ 2 → 2 * (1 + cos √(α^2 + β^2)) ≤ (1 + cos α) * (1 + cos β) := by
+  repeat rw [one_add_cos_eq]
+  field_simp
+  suffices ∀ α β, 0 ≤ α → α ≤ 2 → 0 ≤ β → β ≤ 2 → cos (√(α ^ 2 + β ^ 2) / 2) ^ 2 ≤ cos (α / 2) ^ 2 * cos (β / 2) ^ 2 by
+    simp [abs_le]
+    intro le_α α_le le_β β_le
+    by_cases α_sign : 0 ≤ α <;> by_cases β_sign : 0 ≤ β
+    · apply this <;> linarith
+    · rw [lemma11_1_2, lemma11_1_4]
+      apply this <;> linarith
+    · rw [lemma11_1_1, lemma11_1_3]
+      apply this <;> linarith
+    · rw [lemma11_1_1, lemma11_1_2, lemma11_1_3, lemma11_1_4]
+      apply this <;> linarith
+  intros α β α_nonneg α_le β_nonneg β_le
+  rw [(
+    calc
+      √(α ^ 2 + β ^ 2) / 2 = _ := by rfl
+      _ = √((α / 2) ^ 2 + (β / 2) ^ 2) := by field_simp; simp; field_simp
+  )]
+  generalize α / 2 = x, β / 2 = y
+  rw [(
+    calc
+      cos x ^ 2 * cos y ^ 2 = (cos x * cos y) ^ 2 := by simp [sq]; ring
+  )]
+  apply sq_le_sq.mpr
+  repeat rw [abs_of_nonneg]
+  suffices 2 * cos √(x ^ 2 + y ^ 2) ≤ 2 * cos x * cos y by field_simp at this; assumption
+  rw [two_mul_cos_mul_cos]
+  all_goals sorry
