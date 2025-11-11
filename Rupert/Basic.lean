@@ -863,12 +863,6 @@ lemma two_mul_abs_sin_half_le : 2 * |sin (α / 2)| ≤ |α| := by
     _ = 2 * (|α| / 2) := by simp [abs_div]
     _ = |α| := by field
 
--- lemma two_mul_abs_sin_half_eq : α = 0 ↔ 2 * |sin (α / 2)| = |α| := by
---   constructor
---   · rintro rfl; simp
---   · intro h
---     sorry -- We'll see if strict inequality is needed later
-
 theorem dist_rot2_le_dist : ‖rot2 α - rot2 α'‖ ≤ ‖α - α'‖ := by
   calc
     ‖rot2 α - rot2 α'‖ = _ := by rfl
@@ -911,8 +905,6 @@ lemma sin_sub_mul_cos_monotone_on : MonotoneOn sin_sub_mul_cos (Set.Icc 0 π) :=
   rcases x_in with ⟨x_pos,x_lt⟩
   apply mul_nonneg <;> linarith
 
-
-
 lemma sin_sub_mul_cos_nonneg : x ∈ Set.Icc 0 π → 0 ≤ sin_sub_mul_cos x := by
   simp only [Set.mem_Icc, and_imp]
   intros x_nonneg x_le
@@ -921,8 +913,8 @@ lemma sin_sub_mul_cos_nonneg : x ∈ Set.Icc 0 π → 0 ≤ sin_sub_mul_cos x :=
     _ ≤ sin_sub_mul_cos x := by
       apply sin_sub_mul_cos_monotone_on <;> (try simp only [Set.mem_Icc, le_refl, true_and]) <;> grind
 
-lemma convexOn_cos_sqrt : ConvexOn ℝ (Set.Icc 0 ((π/2)^2)) (cos ∘ sqrt) := by
-  have cos_sqrt_deriv : ∀ x ∈ Set.Ioo 0 ((π / 2) ^ 2), deriv (cos ∘ sqrt) x = -sin √x / (2 * √x) := by
+lemma convexOn_cos_sqrt : ConvexOn ℝ (Set.Icc 0 (π^2)) (cos ∘ sqrt) := by
+  have cos_sqrt_deriv : ∀ x ∈ Set.Ioo 0 (π ^ 2), deriv (cos ∘ sqrt) x = -sin √x / (2 * √x) := by
     simp only [Set.mem_Ioo, and_imp]
     intros x x_pos x_lt
     rw [deriv_comp, deriv_cos', deriv_sqrt, deriv_id'']
@@ -976,7 +968,7 @@ lemma convexOn_cos_sqrt : ConvexOn ℝ (Set.Icc 0 ((π/2)^2)) (cos ∘ sqrt) := 
   · simp only [interior_Icc, Set.mem_Ioo, Function.iterate_succ, Function.iterate_zero, Function.id_def,
     Function.comp_apply, and_imp]
     intro x x_pos x_lt
-    rw [(Set.EqOn.deriv (_ : Set.EqOn (deriv (cos ∘ sqrt)) (fun y => -sin √y / (2 * √y)) (Set.Ioo 0 ((π/2)^2))) (by simp [Ioo_eq_ball] : IsOpen (Set.Ioo 0 ((π/2)^2))))]
+    rw [(Set.EqOn.deriv (_ : Set.EqOn (deriv (cos ∘ sqrt)) (fun y => -sin √y / (2 * √y)) (Set.Ioo 0 (π^2))) (by simp [Ioo_eq_ball] : IsOpen (Set.Ioo 0 (π^2))))]
     rw [deriv_fun_div]
     simp only [deriv.fun_neg', neg_mul, deriv_const_mul_field',
       sub_neg_eq_add]
@@ -1033,7 +1025,7 @@ theorem lemma11_1 : |α| ≤ 2 → |β| ≤ 2 → 2 * (1 + cos √(α^2 + β^2))
       √(α ^ 2 + β ^ 2) / 2 = _ := by rfl
       _ = √((α / 2) ^ 2 + (β / 2) ^ 2) := by field_simp; simp; field_simp
   )]
-  generalize α / 2 = x, β / 2 = y
+  generalize hα : α / 2 = x, hβ : β / 2 = y
   rw [(
     calc
       cos x ^ 2 * cos y ^ 2 = (cos x * cos y) ^ 2 := by simp [sq]; ring
@@ -1042,4 +1034,77 @@ theorem lemma11_1 : |α| ≤ 2 → |β| ≤ 2 → 2 * (1 + cos √(α^2 + β^2))
   repeat rw [abs_of_nonneg]
   suffices 2 * cos √(x ^ 2 + y ^ 2) ≤ 2 * cos x * cos y by field_simp at this; assumption
   rw [two_mul_cos_mul_cos]
-  all_goals sorry
+  let f := cos ∘ sqrt
+  calc
+    2 * cos √(x ^ 2 + y ^ 2) = _ := by rfl
+    _ = 2 * f (x ^ 2 + y ^ 2) := by rfl
+    _ = 2 * f (1/2 * (x - y)^2 + 1/2 * (x + y)^2) := by ring_nf
+    _ ≤ 2 * (1/2 * f ((x - y)^2) + 1/2 * f ((x + y)^2)) := by
+      subst hα hβ
+      simp only [mul_le_mul_iff_right₀, Nat.ofNat_pos]
+      apply convexOn_cos_sqrt.2
+      · simp
+        constructor
+        · positivity
+        · apply sq_le_sq.mpr
+          field_simp
+          simp only [abs_div, Nat.abs_ofNat]
+          field_simp
+          apply le_of_lt
+          calc
+            |α - β| = _ := by rfl
+            _ ≤ |α| + |β| := by apply abs_sub
+            _ ≤ 2 * 3 := by (repeat rw [abs_of_nonneg]) <;> linarith
+            _ < 2 * π := by simp [pi_gt_three]
+            _ = 2 * |π| := by rw [abs_of_nonneg] <;> positivity
+      · simp
+        constructor
+        · positivity
+        · apply sq_le_sq.mpr
+          repeat rw [abs_of_nonneg]
+          field_simp
+          apply le_of_lt
+          calc
+            α + β = _ := by rfl
+            _ ≤ 2 * 3 := by linarith
+            _ < 2 * π := by simp [pi_gt_three]
+          · positivity
+          · positivity
+      · positivity
+      · positivity
+      · ring
+    _ = f ((x - y)^2) + f ((x + y)^2) := by field_simp
+    _ = cos √((x - y)^2) + cos √((x + y)^2) := by simp [f]
+    _ = cos |x - y| + cos |x + y| := by simp [sqrt_sq_eq_abs]
+    _ = cos (x - y) + cos (x + y) := by simp
+  · subst hα hβ
+    have : 3 < π := pi_gt_three
+    apply mul_nonneg <;> {
+      apply cos_nonneg_of_mem_Icc
+      constructor
+      · linarith
+      · linarith
+    }
+  · have : 3 < π := pi_gt_three
+    apply cos_nonneg_of_mem_Icc
+    constructor
+    · calc
+        -(π/2) ≤ 0 := by linarith
+        _ = √0 := by simp
+        _ ≤ √(x ^ 2 + y ^ 2) := by
+          apply sqrt_monotone
+          positivity
+    · subst hα hβ
+      field_simp
+      rw [sqrt_div, sqrt_sq]
+      field_simp
+      apply le_of_lt
+      calc
+        √(α^2 + β^2) ≤ √(2^2 + 2^2) := by
+          apply sqrt_monotone
+          apply add_le_add <;> apply sq_le_sq.mpr <;> simpa [abs_of_nonneg, α_nonneg, β_nonneg]
+        _ = √8 := by ring_nf
+        _ ≤ 3 := by simp only [sqrt_le_iff, Nat.ofNat_nonneg, true_and]; linarith
+        _ < π := by assumption
+      linarith
+      positivity
