@@ -1186,3 +1186,37 @@ theorem lemma12_1 :
   _ ≤ ‖γ‖ := by
       grw [dist_rot3z_eq_dist_rot, dist_rot2_le_dist, sub_zero]
   _ ≤ √(α^2 + β^2) := h
+
+theorem lemma12_2 :
+  ‖rot3x (2 * α) ∘L rot3y (2 * β) - 1‖ ≤ 2 * ‖rot3x α ∘L rot3y β - 1‖ := by
+    sorry
+
+theorem lemma12_3 (n : ℕ) (α_in : |α| ≤ 2^(n+1)) (β_in : |β| ≤ 2^(n+1)) :
+  ‖rot3x α ∘L rot3y β - 1‖ ≤ √(α^2 + β^2) := by
+    induction n generalizing α β with
+    | zero => apply lemma12_1 <;> grind
+    | succ n' h =>
+      calc ‖rot3x α ∘L rot3y β - 1‖
+        _ = ‖rot3x (2 * (α / 2)) ∘L rot3y (2 * (β / 2)) - 1‖ := by
+          field_simp
+        _ ≤ 2 * ‖rot3x (α / 2) ∘L rot3y (β / 2) - 1‖ := lemma12_2
+        _ ≤ 2 * √((α / 2)^2 + (β / 2)^2) := by
+          grw [h] <;> {
+            simp only [abs_div, Nat.abs_ofNat]
+            field_simp
+            grind only
+          }
+        _ = √(α^2 + β^2) := by
+          field_simp
+          rw [sqrt_div, sqrt_sq]
+          field_simp
+          positivity
+          positivity
+
+theorem lemma12_4 :
+  ‖rot3x α ∘L rot3y β - 1‖ ≤ √(α^2 + β^2) := by
+    let n : ℕ := Int.toNat ⌈log (max |α| |β|)⌉
+    apply lemma12_3 n <;> {
+      unfold n
+      sorry
+    }
