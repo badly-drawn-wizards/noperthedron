@@ -1103,7 +1103,7 @@ theorem lemma11_1 : |α| ≤ 2 → |β| ≤ 2 → 2 * (1 + cos √(α^2 + β^2))
 -- requires matrix form of Euler's rotation theorem
 -- which in turn requires Schur decomposition
 lemma rot3x_rot3y_orth_equiv_rotz : ∃ (u : ℝ³ ≃ₗᵢ[ℝ] ℝ³) (γ : ℝ),
-  γ ∈ Set.Ico (-π) π ∧ rot3x α ∘L rot3y β = u ∘L rot3z γ ∘L u.symm := by sorry
+  γ ∈ Set.Ico (-π) π ∧ rot3x α ∘L rot3y β = u.toLinearIsometry.toContinuousLinearMap ∘L rot3z γ ∘L u.symm.toLinearIsometry.toContinuousLinearMap := by sorry
 
 abbrev tr := LinearMap.trace ℝ ℝ³
 abbrev tr' := LinearMap.trace ℝ (Fin 3 → ℝ)
@@ -1157,10 +1157,32 @@ theorem lemma12_1 :
       apply lemma11_1 <;> assumption
     _ = (cos α + cos β + cos α * cos β) + 1 := by ring_nf
     _ = tr (rot3x α ∘L rot3y β) + 1 := by rw [←tr_rot3x_rot3y]
-    _ = tr (u ∘L rot3z γ ∘L u.symm : ℝ³ →L[ℝ] ℝ³) + 1 := by rw [rx_ry_eq]
+    _ = tr (u.toLinearIsometry.toContinuousLinearMap ∘L rot3z γ ∘L u.symm.toLinearIsometry.toContinuousLinearMap : ℝ³ →L[ℝ] ℝ³) + 1 := by rw [rx_ry_eq]
     _ = tr (u.conj (rot3z γ)) + 1 := by rfl
     _ = tr (rot3z γ) + 1 := by rw [LinearMap.trace_conj']
     _ = 2 + 2 * cos γ := by rw [tr_rot3z]; ring_nf
     _ = 2 * (1 + cos γ) := by ring_nf
 
-  sorry
+  calc ‖u.toLinearIsometry.toContinuousLinearMap ∘L rot3z γ ∘L u.symm.toLinearIsometry.toContinuousLinearMap - 1‖
+  _ = ‖u.toLinearIsometry.toContinuousLinearMap ∘L rot3z γ ∘L u.symm.toLinearIsometry.toContinuousLinearMap
+        - (u.trans u.symm).toLinearIsometry.toContinuousLinearMap‖ := by
+    rw [LinearIsometryEquiv.self_trans_symm]
+    rfl
+  _ = ‖u.toLinearIsometry.toContinuousLinearMap ∘L rot3z γ ∘L u.symm.toLinearIsometry.toContinuousLinearMap
+        - u.toLinearIsometry.toContinuousLinearMap ∘L u.symm.toLinearIsometry.toContinuousLinearMap‖ := by
+    congr
+    reduce -- TODO: do this better
+    simp only [LinearEquiv.invFun_eq_symm, LinearIsometryEquiv.coe_symm_toLinearEquiv,
+      AddHom.toFun_eq_coe, LinearMap.coe_toAddHom, LinearEquiv.coe_coe,
+      LinearIsometryEquiv.coe_toLinearEquiv, LinearIsometryEquiv.symm_apply_apply,
+      LinearIsometryEquiv.apply_symm_apply]
+  _ = ‖u.toLinearIsometry.toContinuousLinearMap ∘L (rot3z γ - 1) ∘L u.symm.toLinearIsometry.toContinuousLinearMap‖ := by
+    simp only [ContinuousLinearMap.sub_comp, ContinuousLinearMap.comp_sub]
+    rfl
+  _ = ‖rot3z γ - 1‖ := by
+    rw [LinearIsometry.norm_toContinuousLinearMap_comp, ContinuousLinearMap.opNorm_comp_linearIsometryEquiv]
+  _ ≤ ‖rot3z γ - rot3z 0‖ := by
+    rw [rot3z.map_zero_eq_one]
+  _ ≤ ‖γ‖ := by
+      grw [dist_rot3z_eq_dist_rot, dist_rot2_le_dist, sub_zero]
+  _ ≤ √(α^2 + β^2) := h
