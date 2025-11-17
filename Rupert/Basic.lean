@@ -1215,8 +1215,20 @@ theorem lemma12_3 (n : ℕ) (α_in : |α| ≤ 2^(n+1)) (β_in : |β| ≤ 2^(n+1)
 
 theorem lemma12_4 :
   ‖rot3x α ∘L rot3y β - 1‖ ≤ √(α^2 + β^2) := by
-    let n : ℕ := Int.toNat ⌈log (max |α| |β|)⌉
+    let n : ℕ := Nat.clog 2 ⌈max |α| |β|⌉₊
     apply lemma12_3 n <;> {
       unfold n
-      sorry
+      rw [←rpow_natCast, Nat.cast_add]
+      simp only [Nat.cast_one, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, rpow_add_one,
+        rpow_natCast]
+      calc
+        _ ≤ max |α| |β| := by simp
+        _ ≤ ⌈max |α| |β|⌉₊ := by apply Nat.le_ceil
+        _ = ⌈max |α| |β|⌉₊ * 1 := by simp
+        _ ≤ ⌈max |α| |β|⌉₊ * 2 := by gcongr; simp
+        _ ≤ (2 ^ (Nat.clog 2 ⌈max |α| |β|⌉₊) : ℕ) * 2 := by
+          gcongr
+          apply Nat.le_pow_clog
+          simp
+        _ ≤ 2 ^ (Nat.clog 2 ⌈max |α| |β|⌉₊) * 2 := by simp
     }
