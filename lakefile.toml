@@ -4,6 +4,7 @@ keywords = ["math"]
 defaultTargets = ["Rupert"]
 
 [leanOptions]
+experimental.module = true
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 
 [[require]]
