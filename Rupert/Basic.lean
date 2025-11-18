@@ -1189,7 +1189,16 @@ theorem lemma12_1 :
 
 theorem lemma12_2 :
   ‖rot3x (2 * α) ∘L rot3y (2 * β) - 1‖ ≤ 2 * ‖rot3x α ∘L rot3y β - 1‖ := by
-    sorry
+    calc
+    _ = ‖rot3x (2 * α) ∘L rot3y (2 * β) - rot3x α ∘L rot3y β‖ + ‖rot3x α ∘L rot3y β - 1‖ := by sorry
+    _ = ‖(rot3x α ∘L rot3x α) ∘L (rot3y β ∘L rot3y β) - rot3x α ∘L rot3y β‖ + ‖rot3x α ∘L rot3y β - 1‖ := by sorry
+    _ = ‖rot3x α ∘L rot3y β - 1‖ + ‖rot3x α ∘L rot3y β - 1‖ := by
+      congr 1
+      calc
+        _ = ‖rot3x α ∘L (rot3x α ∘L rot3y β) ∘L rot3y β - rot3x α ∘L rot3y β‖ := by sorry
+        _ = ‖rot3x α ∘L (rot3x α ∘L rot3y β) ∘L rot3y β - rot3x α ∘L 1 ∘L rot3y β‖ := by sorry
+
+    _ = 2 * ‖rot3x α ∘L rot3y β - 1‖ := by ring
 
 theorem lemma12_3 (n : ℕ) (α_in : |α| ≤ 2^(n+1)) (β_in : |β| ≤ 2^(n+1)) :
   ‖rot3x α ∘L rot3y β - 1‖ ≤ √(α^2 + β^2) := by
