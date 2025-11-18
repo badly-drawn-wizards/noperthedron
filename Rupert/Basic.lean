@@ -1190,14 +1190,21 @@ theorem lemma12_1 :
 theorem lemma12_2 :
   ‖rot3x (2 * α) ∘L rot3y (2 * β) - 1‖ ≤ 2 * ‖rot3x α ∘L rot3y β - 1‖ := by
     calc
-    _ = ‖rot3x (2 * α) ∘L rot3y (2 * β) - rot3x α ∘L rot3y β‖ + ‖rot3x α ∘L rot3y β - 1‖ := by sorry
-    _ = ‖(rot3x α ∘L rot3x α) ∘L (rot3y β ∘L rot3y β) - rot3x α ∘L rot3y β‖ + ‖rot3x α ∘L rot3y β - 1‖ := by sorry
-    _ = ‖rot3x α ∘L rot3y β - 1‖ + ‖rot3x α ∘L rot3y β - 1‖ := by
-      congr 1
+    _ = ‖(rot3x (2 * α) ∘L rot3y (2 * β) - rot3x α ∘L rot3y β) + (rot3x α ∘L rot3y β - 1)‖ := by simp
+    _ ≤ ‖rot3x (2 * α) ∘L rot3y (2 * β) - rot3x α ∘L rot3y β‖ + ‖rot3x α ∘L rot3y β - 1‖ := by apply norm_add_le
+    _ = ‖(rot3x α ∘L rot3x α) ∘L (rot3y β ∘L rot3y β) - rot3x α ∘L rot3y β‖ + ‖rot3x α ∘L rot3y β - 1‖ := by
+      repeat rw [two_mul, AddChar.map_add_eq_mul]
+      rfl
+    _ ≤ ‖rot3x α ∘L rot3y β - 1‖ + ‖rot3x α ∘L rot3y β - 1‖ := by
+      gcongr 1
       calc
-        _ = ‖rot3x α ∘L (rot3x α ∘L rot3y β) ∘L rot3y β - rot3x α ∘L rot3y β‖ := by sorry
-        _ = ‖rot3x α ∘L (rot3x α ∘L rot3y β) ∘L rot3y β - rot3x α ∘L 1 ∘L rot3y β‖ := by sorry
-
+        _ = ‖rot3x α ∘L (rot3x α ∘L rot3y β) ∘L rot3y β - rot3x α ∘L rot3y β‖ := by congr 1
+        _ = ‖rot3x α ∘L (rot3x α ∘L rot3y β) ∘L rot3y β - rot3x α ∘L 1 ∘L rot3y β‖ := by congr 1
+        _ = ‖rot3x α ∘L (rot3x α ∘L rot3y β - 1) ∘L rot3y β‖ := by simp
+        _ ≤ ‖(rot3x α ∘L rot3y β - 1)‖ := by
+          repeat grw [ContinuousLinearMap.opNorm_comp_le]
+          rw [lemma9_rot3x, lemma9_rot3y]
+          simp
     _ = 2 * ‖rot3x α ∘L rot3y β - 1‖ := by ring
 
 theorem lemma12_3 (n : ℕ) (α_in : |α| ≤ 2^(n+1)) (β_in : |β| ≤ 2^(n+1)) :
